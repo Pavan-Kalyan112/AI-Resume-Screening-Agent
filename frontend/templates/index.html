@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Screening Agent</title>
+    <meta name="description" content="AI-powered resume screening and job matching tool">
+    <link rel="icon" href="/static/favicon.ico">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        html, body { height: 100%; }
+        .tab-btn { transition: all 0.2s; }
+        .tab-btn:hover { transform: translateY(-1px); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                AI Resume Screening Agent
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400">
+                Upload your resume, analyze it, match with job descriptions, and get AI-powered suggestions
+            </p>
+        </div>
+
+        <!-- Main Interface -->
+        <div class="max-w-6xl mx-auto">
+            <!-- Tab Navigation -->
+            <nav class="flex flex-wrap gap-2 mb-8 border-b border-gray-200 dark:border-gray-700" role="tablist">
+                <button class="tab-btn tab-active px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-lg text-sm sm:text-base flex items-center gap-2 transition-all duration-200 hover:scale-105 hover:bg-blue-100 dark:hover:bg-blue-900" data-tab="upload" role="tab" aria-selected="true" aria-controls="panel-upload" tabindex="0">
+                    <span class="material-icons">upload</span> Upload Resume
+                </button>
+                <button class="tab-btn tab-inactive px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-lg text-sm sm:text-base flex items-center gap-2 transition-all duration-200 hover:scale-105 hover:bg-green-100 dark:hover:bg-green-900" data-tab="analytics" role="tab" aria-selected="false" aria-controls="panel-analytics" tabindex="-1">
+                    <span class="material-icons">analytics</span> Analytics
+                </button>
+                <button class="tab-btn tab-inactive px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-lg text-sm sm:text-base flex items-center gap-2 transition-all duration-200 hover:scale-105 hover:bg-purple-100 dark:hover:bg-purple-900" data-tab="jd-match" role="tab" aria-selected="false" aria-controls="panel-jd-match" tabindex="-1">
+                    <span class="material-icons">find_in_page</span> JD Match
+                </button>
+                <button class="tab-btn tab-inactive px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-lg text-sm sm:text-base flex items-center gap-2 transition-all duration-200 hover:scale-105 hover:bg-pink-100 dark:hover:bg-pink-900" data-tab="chat" role="tab" aria-selected="false" aria-controls="panel-chat" tabindex="-1">
+                    <span class="material-icons">chat</span> AI Chat
+                </button>
+            </nav>
+
+            <!-- Tab Panels -->
+            <main class="space-y-8">
+                <!-- Upload Resume Panel -->
+                <div id="panel-upload" class="tab-panel active" role="tabpanel" aria-labelledby="tab-upload">
+                    <div class="space-y-6">
+                        <!-- File Upload Area -->
+                        <div id="drop-area" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors duration-200 cursor-pointer">
+                            <div class="space-y-4">
+                                <div class="text-4xl">📄</div>
+                                <div class="text-lg font-medium text-gray-700 dark:text-gray-300">
+                                    Drop your resume here or click to browse
+                                </div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                    Supports PDF, DOCX, and TXT files (max 10MB)
+                                </div>
+                                <input type="file" id="resume-file" accept=".pdf,.docx,.doc,.txt" class="hidden">
+                            </div>
+                        </div>
+
+                        <!-- File Info -->
+                        <div id="file-info" class="hidden bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-green-600 dark:text-green-400">✅</span>
+                                    <span id="file-name" class="font-medium text-gray-900 dark:text-gray-100"></span>
+                                </div>
+                                <button id="remove-file" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                                    <span class="material-icons">close</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Upload Button -->
+                        <button id="upload-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <span class="flex items-center justify-center space-x-2">
+                                <span class="material-icons">upload</span>
+                                <span>Analyze Resume</span>
+                            </span>
+                        </button>
+
+                        <!-- Loading State -->
+                        <div id="screening-loader" class="hidden text-center py-8">
+                            <div class="inline-flex items-center space-x-2">
+                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                <span class="text-gray-600 dark:text-gray-400">AI is analyzing your resume...</span>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div id="result-card" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Analysis Results</h3>
+                                        <button id="clear-upload" class="text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-lg transition-colors duration-200 flex items-center space-x-1">
+                                            <span class="material-icons text-sm">refresh</span>
+                                            <span>Clear</span>
+                                        </button>
+                                </div>
+                                <div id="result-text" class="text-gray-700 dark:text-gray-300"></div>
+                                
+                                <!-- Analytics Section -->
+                                <div id="analytics-section" class="hidden space-y-4">
+                                    <h4 class="font-semibold text-gray-900 dark:text-gray-100">📊 Detailed Analytics</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Resume Score</span>
+                                                <div id="score-display" class="text-2xl font-bold text-green-600 dark:text-green-400"></div>
+                                            </div>
+                                        </div>
+                                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 p-4 rounded-lg">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Response Time</span>
+                                                <div id="response-time" class="text-lg font-semibold text-blue-600 dark:text-blue-400"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Skills, Experience, Red Flags -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                                            <h5 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Key Skills</h5>
+                                            <ul id="skills-list" class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1"></ul>
+                                        </div>
+                                        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                                            <h5 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">💼 Experience</h5>
+                                            <ul id="experience-list" class="text-sm text-blue-700 dark:text-blue-300 space-y-1"></ul>
+                                        </div>
+                                        <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                                            <h5 class="font-semibold text-red-800 dark:text-red-200 mb-2">⚠️ Red Flags</h5>
+                                            <ul id="redflags-list" class="text-sm text-red-700 dark:text-red-300 space-y-1"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Error Message -->
+                        <div id="error-animated" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-red-600 dark:text-red-400 text-xl">❌</span>
+                                <div>
+                                    <h4 class="font-semibold text-red-800 dark:text-red-200">Error</h4>
+                                    <p id="error-message" class="text-red-700 dark:text-red-300 text-sm"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Panel -->
+                <div id="panel-analytics" class="tab-panel" role="tabpanel" aria-labelledby="tab-analytics">
+                    <div class="space-y-6">
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">📊 Resume Analytics Dashboard</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                View detailed analytics and insights about your resume performance.
+                            </p>
+                        </div>
+
+                        <div id="analytics-content" class="text-center py-12">
+                            <div class="text-gray-500 dark:text-gray-400">
+                                <span class="material-icons text-6xl mb-4">analytics</span>
+                                <p class="text-lg">Upload a resume first to view analytics</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JD Match Panel -->
+                <div id="panel-jd-match" class="tab-panel" role="tabpanel" aria-labelledby="tab-jd-match">
+                    <div class="space-y-6">
+                        <div class="bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">🔍 Job Description Matching</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Compare your resume with a job description to see how well you match.
+                            </p>
+                        </div>
+
+                        <!-- JD Match Form -->
+                        <form id="jd-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    📄 Resume File
+                                </label>
+                                <input type="file" id="jd-resume-file" accept=".pdf,.docx,.doc,.txt" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    📋 Job Description
+                                </label>
+                                <textarea id="jd-text" rows="6" placeholder="Paste the job description here..." class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"></textarea>
+                            </div>
+                            <button type="submit" id="jd-match-btn" class="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                                <span class="flex items-center justify-center space-x-2">
+                                    <span class="material-icons">compare</span>
+                                    <span>Match Resume with JD</span>
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- JD Loading State -->
+                        <div id="jd-loader" class="hidden text-center py-8">
+                            <div class="inline-flex items-center space-x-2">
+                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                                <span class="text-gray-600 dark:text-gray-400">Analyzing job match...</span>
+                            </div>
+                        </div>
+
+                        <!-- JD Results -->
+                        <div id="jd-result" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Job Match Analysis</h3>
+                                        <button id="clear-jd" class="text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-lg transition-colors duration-200 flex items-center space-x-1">
+                                            <span class="material-icons text-sm">refresh</span>
+                                            <span>Clear</span>
+                                        </button>
+                                </div>
+                                
+                                <!-- Match Score -->
+                                <div class="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 p-4 rounded-lg">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-lg font-medium text-gray-700 dark:text-gray-300">Match Score</span>
+                                        <div id="jd-score" class="text-3xl font-bold text-purple-600 dark:text-purple-400"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Keywords Analysis -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                                        <h5 class="font-semibold text-green-800 dark:text-green-200 mb-2">✅ Matched Keywords</h5>
+                                        <div id="matched-keywords" class="flex flex-wrap gap-2"></div>
+                                    </div>
+                                    <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                                        <h5 class="font-semibold text-orange-800 dark:text-orange-200 mb-2">❌ Missing Keywords</h5>
+                                        <div id="missing-keywords" class="flex flex-wrap gap-2"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Feedback -->
+                                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                                    <h5 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">💡 Improvement Suggestions</h5>
+                                    <ul id="feedback-list" class="text-sm text-blue-700 dark:text-blue-300 space-y-1"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Chat Panel -->
+                <div id="panel-chat" class="tab-panel" role="tabpanel" aria-labelledby="tab-chat">
+                    <div class="space-y-6">
+                        <div class="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 p-4 rounded-lg border border-pink-200 dark:border-pink-700">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">💬 AI Chat Assistant</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Ask questions about your resume and get AI-powered insights and recommendations.
+                            </p>
+                        </div>
+
+                        <!-- Chat Interface -->
+                        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 h-96 flex flex-col">
+                            <!-- Chat Messages -->
+                            <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-4">
+                                <div class="chat-bubble-ai">
+                                    <div class="flex justify-start">
+                                        <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                                            <p class="text-sm">Hello! I'm your AI resume assistant. Upload a resume first, then ask me anything about it. I can help you understand your strengths, suggest improvements, or answer questions about your qualifications.</p>
+                                            <p class="text-xs opacity-75 mt-1">Just now</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Typing Indicator -->
+                            <div id="typing-indicator" class="hidden p-4">
+                                <div class="flex justify-start">
+                                    <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex space-x-1">
+                                                <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                                                <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                                                <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                            </div>
+                                            <span class="text-sm text-gray-600 dark:text-gray-400">AI is thinking...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chat Input -->
+                            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                                <form id="chat-form" class="flex space-x-2">
+                                    <input type="text" id="chat-input" placeholder="Ask about your resume..." class="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-pink-500 focus:border-transparent" required>
+                                    <button type="submit" class="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white px-4 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
+                                        <span class="material-icons">send</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Chat Tips -->
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                            <h4 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">💡 Chat Tips</h4>
+                            <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                                <li>• "What are my strongest skills?"</li>
+                                <li>• "How can I improve my resume?"</li>
+                                <li>• "What experience is most relevant for a software engineer role?"</li>
+                                <li>• "Are there any gaps in my experience?"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

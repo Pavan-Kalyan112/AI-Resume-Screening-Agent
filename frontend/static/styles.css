@@ -1,0 +1,115 @@
+/* Essential styles for the streamlined resume screening application */
+
+/* Tab styling */
+.tab-active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.tab-inactive {
+    background: white;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+.dark .tab-inactive {
+    background: #374151;
+    color: #f9fafb;
+    border: 1px solid #4b5563;
+}
+
+/* Chat bubble styling */
+.chat-bubble-user .max-w-xs,
+.chat-bubble-user .max-w-md {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.chat-bubble-ai .max-w-xs,
+.chat-bubble-ai .max-w-md {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.dark .chat-bubble-ai .max-w-xs,
+.dark .chat-bubble-ai .max-w-md {
+    background: #4b5563;
+    color: #f9fafb;
+}
+
+/* Loading animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Hover effects */
+.hover\:scale-105:hover {
+    transform: scale(1.05);
+}
+
+/* Transition effects */
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Focus states */
+.focus\:ring-2:focus {
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.5);
+}
+
+/* File upload area */
+#drop-area:hover {
+    border-color: #667eea;
+    background-color: rgba(102, 126, 234, 0.05);
+}
+
+/* Success and error states */
+.bg-green-50 {
+    background-color: #f0fdf4;
+}
+
+.bg-red-50 {
+    background-color: #fef2f2;
+}
+
+.dark .bg-green-50 {
+    background-color: rgba(34, 197, 94, 0.1);
+}
+
+.dark .bg-red-50 {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .text-4xl {
+        font-size: 2rem;
+    }
+    
+    .grid-cols-1.md\:grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .animate-spin,
+    .transition-all,
+    .hover\:scale-105:hover {
+        animation: none;
+        transition: none;
+        transform: none;
+    }
+}
